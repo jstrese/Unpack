@@ -101,6 +101,7 @@ namespace Unpack
         //
         private static void ExtractFile()
         {
+            Console.
             if (isFile(arguments["programPath"]))
             {
                 bool fileReady = false;
@@ -114,7 +115,26 @@ namespace Unpack
 
                 if (fileReady)
                 {
-                    LogMessage("File is accessible.");
+                    using (Process Extractor = new Process())
+                    {
+                        Extractor.StartInfo.FileName = arguments["programPath"];
+
+                        //
+                        // If the username and password are not NULL and
+                        // 'UseShellExecute' is not false, a window will appear
+                        //
+                        Extractor.StartInfo.CreateNoWindow = true;
+                        Extractor.StartInfo.UseShellExecute = false;
+                        Extractor.StartInfo.UserName = null;
+                        Extractor.StartInfo.Password = null;
+
+                        Extractor.StartInfo.Arguments = String.Format("e \"{0}\" -o\"{1}\" -r -y", arguments["filePath"], arguments["extractPath"]);
+
+                        if (Extractor.Start())
+                            LogMessage("Extraction executed successfully.");
+                        else
+                            LogMessage("Extraction process did not execute.");
+                    }
                 }
                 else
                     LogMessage(String.Format("'maxwait' of '{0}' has been exceeded while waiting for the file to be available", arguments["maxwait"]));
@@ -159,10 +179,7 @@ namespace Unpack
                 using (FileStream input = File.Open(arguments["filePath"], FileMode.Open, FileAccess.Read, FileShare.None))
                 {
                     if (input.Length > 0)
-                    {
-                        LogMessage("Successfully located accessible file");
                         return true;
-                    }
                     else
                     {
                         LogMessage("Zero byte file located");
