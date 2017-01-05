@@ -37,8 +37,11 @@ namespace Unpack
 
         static void Main(string[] args)
         {
-            if (args.Length >= 2 && isDirectoryValid(args[0]) && isDirectoryValid(args[1]))
-            {   
+            //
+            // TODO: Determine if filePath is a directory or archive
+            //
+            if (args.Length >= 2 && isFile(args[0]) && isDirectoryValid(args[1]))
+            {
                 arguments["filePath"] = args[0];
                 arguments["extractPath"] = args[1];
 
@@ -87,6 +90,8 @@ namespace Unpack
                 Console.WriteLine(String.Format("{0}\t\t=>\t{1}", "log", arguments["log"]));
                 Console.WriteLine(String.Format("Log Write Path\t=>\t{0}\\log.txt", Directory.GetParent(System.Reflection.Assembly.GetEntryAssembly().Location)));
 
+                ExtractFile();
+
                 Console.ReadLine();
             }
         }
@@ -101,16 +106,18 @@ namespace Unpack
                 bool fileReady = false;
                 DateTime endtime = DateTime.Now.AddSeconds(Convert.ToInt32(arguments["maxwait"]));
 
-
                 while (!fileReady && (DateTime.Now.CompareTo(endtime) < 1))
                 {
+                    Console.WriteLine("> Waiting for file to be available");
                     fileReady = isFileReady();
                 }
 
-                //
-                // TODO: Figure out why the while() exited (could be maxwait exceeded)
-                //       Continue on with extraction if maxwait is OK
-                //
+                if (fileReady)
+                {
+                    LogMessage("File is accessible.");
+                }
+                else
+                    LogMessage(String.Format("'maxwait' of '{0}' has been exceeded while waiting for the file to be available", arguments["maxwait"]));
             }
         }
 
