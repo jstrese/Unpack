@@ -101,7 +101,6 @@ namespace Unpack
         //
         private static void ExtractFile()
         {
-            Console.
             if (isFile(arguments["programPath"]))
             {
                 bool fileReady = false;
