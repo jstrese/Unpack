@@ -37,11 +37,8 @@ namespace Unpack
 
         static void Main(string[] args)
         {
-            if (args.Length >= 2)
-            {
-                //
-                // TODO: Check these paths
-                //
+            if (args.Length >= 2 && isDirectoryValid(args[0]) && isDirectoryValid(args[1]))
+            {   
                 arguments["filePath"] = args[0];
                 arguments["extractPath"] = args[1];
 
@@ -75,7 +72,6 @@ namespace Unpack
 
                         if (arg_split[0] == "-clean")
                             arguments["clean"] = arg_split[1];
-                        // TODO: Check this path
                         if (arg_split[0] == "-programPath")
                             arguments["programPath"] = arg_split[1];
                     }
@@ -100,19 +96,50 @@ namespace Unpack
         //
         private static void ExtractFile()
         {
-            bool fileReady = false;
-            DateTime endtime = DateTime.Now.AddSeconds(Convert.ToInt32(arguments["maxwait"]));
-
-
-            while (!fileReady && (DateTime.Now.CompareTo(endtime) < 1))
+            if (isFile(arguments["programPath"]))
             {
-                fileReady = isFileReady();
-            }
+                bool fileReady = false;
+                DateTime endtime = DateTime.Now.AddSeconds(Convert.ToInt32(arguments["maxwait"]));
 
-            //
-            // TODO: Figure out why the while() exited (could be maxwait exceeded)
-            //       Continue on with extraction if maxwait is OK
-            //
+
+                while (!fileReady && (DateTime.Now.CompareTo(endtime) < 1))
+                {
+                    fileReady = isFileReady();
+                }
+
+                //
+                // TODO: Figure out why the while() exited (could be maxwait exceeded)
+                //       Continue on with extraction if maxwait is OK
+                //
+            }
+        }
+
+        //
+        // Checks to see if the supplied directory is valid
+        //
+        private static bool isDirectoryValid(string dir)
+        {
+            if (Directory.Exists(dir))
+                return true;
+            else
+            {
+                LogMessage(String.Format("Unable to locate directory: {0}", dir));
+                return false;
+            }
+        }
+
+        //
+        // Checks to see if the supplied file is valid
+        //
+        private static bool isFile(string path)
+        {
+            if (File.Exists(path))
+                return true;
+            else
+            {
+                LogMessage(String.Format("Unable to locate file: {0}", path));
+                return false;
+            }
         }
 
         //
@@ -144,6 +171,7 @@ namespace Unpack
 
         //
         // Used when a directory is passed to the program and not a file
+        // TODO: Implement recursive extracting
         //
         private static void ExtractDirectory()
         {
@@ -171,7 +199,6 @@ namespace Unpack
                 using (FileStream logfile = new FileStream(String.Format("{0}\\log.txt", Directory.GetParent(System.Reflection.Assembly.GetEntryAssembly().Location)), FileMode.Append, FileAccess.Write))
                 using (StreamWriter write = new StreamWriter(logfile))
                 {
-
                     string DebugOutput = String.Format("Argument Output\r\n{0}{1}{2}{3}{4}{5}{6}{7}=============================\r\n",
                         String.Format("{0}\t=>\t{1}\r\n", "filePath", arguments["filePath"]),
                         String.Format("{0}\t=>\t{1}\r\n", "extractPath", arguments["extractPath"]),
