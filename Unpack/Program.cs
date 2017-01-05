@@ -89,9 +89,7 @@ namespace Unpack
                 Console.WriteLine(String.Format("{0}\t\t=>\t{1}", "trash", arguments["trash"]));
                 Console.WriteLine(String.Format("{0}\t\t=>\t{1}", "clean", arguments["clean"]));
                 Console.WriteLine(String.Format("{0}\t\t=>\t{1}", "log", arguments["log"]));
-
-                // TODO: Correct the LogMessage function
-                //LogMessage("Test Message");
+                Console.WriteLine(String.Format("Log Write Path\t=>\t{0}\\log.txt", Directory.GetParent(System.Reflection.Assembly.GetEntryAssembly().Location)));
 
                 Console.ReadLine();
             }
@@ -127,12 +125,13 @@ namespace Unpack
                 using (FileStream input = File.Open(arguments["filePath"], FileMode.Open, FileAccess.Read, FileShare.None))
                 {
                     if (input.Length > 0)
+                    {
+                        LogMessage("Successfully located accessible file");
                         return true;
+                    }
                     else
                     {
-                        //
-                        // TODO: Log saying that file was ready but length was detected as 0
-                        //
+                        LogMessage("Zero byte file located");
                         return false;
                     }
                 }
@@ -160,34 +159,35 @@ namespace Unpack
         }
 
         //
-        // TODO: Clean up this dirty dirty function
+        // Logs a message to our log file - file is created if it does not exist
         //
         private static void LogMessage(string message)
         {
+            //
+            // TODO: Graceful error handling when writing to the log file
+            //
             try
             {
-                File.Create(String.Format("{0}\\log.txt", System.Reflection.Assembly.GetEntryAssembly().Location));
-            }
-            catch (Exception) { }
+                using (FileStream logfile = new FileStream(String.Format("{0}\\log.txt", Directory.GetParent(System.Reflection.Assembly.GetEntryAssembly().Location)), FileMode.Append, FileAccess.Write))
+                using (StreamWriter write = new StreamWriter(logfile))
+                {
 
-            using (FileStream logfile = File.OpenWrite(String.Format("{0}\\log.txt", System.Reflection.Assembly.GetEntryAssembly().Location)))
-            {
+                    string DebugOutput = String.Format("Argument Output\r\n{0}{1}{2}{3}{4}{5}{6}{7}=============================\r\n",
+                        String.Format("{0}\t=>\t{1}\r\n", "filePath", arguments["filePath"]),
+                        String.Format("{0}\t=>\t{1}\r\n", "extractPath", arguments["extractPath"]),
+                        String.Format("{0}\t=>\t{1}\r\n", "programPath", arguments["programPath"]),
+                        String.Format("{0}\t=>\t{1}\r\n", "skipwait", arguments["skipwait"]),
+                        String.Format("{0}\t\t=>\t{1}\r\n", "maxwait", arguments["maxwait"]),
+                        String.Format("{0}\t\t=>\t{1}\r\n", "trash", arguments["trash"]),
+                        String.Format("{0}\t\t=>\t{1}\r\n", "clean", arguments["clean"]),
+                        String.Format("{0}\t\t\t=>\t{1}\r\n", "log", arguments["log"])
+                    );
 
-                string DebugOutput = String.Format("\t=== Argument Output ===\r\n{0}\r\n\t========================\r\n\r\n",
-                    String.Format("\t{0}\t=>\t{1}\r\n", "filePath", arguments["filePath"]),
-                    String.Format("\t{0}\t=>\t{1}\r\n", "extractPath", arguments["extractPath"]),
-                    String.Format("\t{0}\t=>\t{1}\r\n", "programPath", arguments["programPath"]),
-                    String.Format("\t{0}\t=>\t{1}\r\n", "skipwait", arguments["skipwait"]),
-                    String.Format("\t{0}\t\t=>\t{1}\r\n", "maxwait", arguments["maxwait"]),
-                    String.Format("\t{0}\t\t=>\t{1}\r\n", "trash", arguments["trash"]),
-                    String.Format("\t{0}\t\t=>\t{1}\r\n", "clean", arguments["clean"]),
-                    String.Format("\t{0}\t\t=>\t{1}\r\n", "log", arguments["log"])
-                );
+                    string LogMessage = String.Format("==== [{0} {1}] ====\r\nLog Message: {2}\r\n\r\n{3}\r\n", DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString(), message, DebugOutput);
 
-                string LogMessage = String.Format("[{0} {1}] {2}\r\n{3}\r\n", DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString(), message, DebugOutput);
-
-                logfile.Write(ASCIIEncoding.Default.GetBytes(LogMessage), 0, ASCIIEncoding.Default.GetByteCount(LogMessage));
-            }
+                    write.WriteAsync(LogMessage);
+                }
+            } catch (Exception) { }
         }
     }
 }
